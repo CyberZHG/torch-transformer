@@ -21,4 +21,4 @@ class TestTransformer(TestCase):
         print(net)
         encoder_input = torch.randint(0, 13, (3, 5)).type(torch.LongTensor)
         decoder_input = torch.randint(0, 17, (3, 7)).type(torch.LongTensor)
-        net(encoder_input, None, decoder_input)
+        net(encoder_input, decoder_input)

@@ -66,7 +66,7 @@ class EncoderComponent(nn.Module):
             dropout_rate=dropout_rate,
         )
 
-    def forward(self, x, mask):
+    def forward(self, x, mask=None):
         return self.feed_forward(self.attention(x, x, x, mask=mask))
 
 
@@ -109,7 +109,7 @@ class DecoderComponent(nn.Module):
             dropout_rate=dropout_rate,
         )
 
-    def forward(self, x, encoded, mask):
+    def forward(self, x, encoded, mask=None):
         y = self.self_attention(x, x, x, mask=MultiHeadAttention.gen_history_mask(x))
         y = self.attention(y, encoded, encoded, mask=mask)
         return self.feed_forward(y)
@@ -139,7 +139,7 @@ class Encoder(nn.Module):
             self.add_module('encoder_%d' % i, component)
             self.components.append(component)
 
-    def forward(self, x, mask):
+    def forward(self, x, mask=None):
         for component in self.components:
             x = component(x, mask=mask)
         return x
@@ -169,7 +169,7 @@ class Decoder(nn.Module):
             self.add_module('decoder_%d' % i, component)
             self.components.append(component)
 
-    def forward(self, x, encoded, mask):
+    def forward(self, x, encoded, mask=None):
         for component in self.components:
             x = component(x, encoded=encoded, mask=mask)
         return x
@@ -206,9 +206,9 @@ class EncoderDecoder(nn.Module):
             dropout_rate=dropout_rate,
         )
 
-    def forward(self, encoder_input, encoder_mask, decoder_input):
+    def forward(self, encoder_input, decoder_input, encoder_mask=None):
         encoded = self.encoder(encoder_input, encoder_mask)
-        return self.decoder(decoder_input, encoded, encoder_mask)
+        return self.decoder(decoder_input, encoded, mask=encoder_mask)
 
 
 class Transformer(nn.Module):
@@ -248,8 +248,8 @@ class Transformer(nn.Module):
         )
         self.embedding_sim = EmbeddingSim(num_embeddings=decoder_num_embedding)
 
-    def forward(self, encoder_input, encoder_mask, decoder_input):
+    def forward(self, encoder_input, decoder_input, encoder_mask=None):
         encoder_input = self.position_embedding(self.encoder_embedding(encoder_input))
         decoder_input = self.position_embedding(self.decoder_embedding(decoder_input))
-        decoded = self.encoder_decoder(encoder_input, encoder_mask, decoder_input)
+        decoded = self.encoder_decoder(encoder_input, decoder_input, encoder_mask)
         return self.embedding_sim(decoded, self.decoder_embedding.weight)
