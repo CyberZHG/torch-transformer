@@ -12,7 +12,7 @@ with codecs.open('requirements.txt', 'r', 'utf8') as reader:
 
 setup(
     name='torch-transformer',
-    version='0.18.0',
+    version='0.18.1',
     packages=find_packages(),
     url='https://github.com/CyberZHG/torch-transformer',
     license='MIT',
