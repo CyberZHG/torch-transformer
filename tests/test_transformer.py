@@ -1,15 +1,16 @@
 import torch
 import torch.nn.functional as F
 from unittest import TestCase
-from torch_transformer import EncoderDecoder
+from torch_transformer import Transformer
 
 
 class TestTransformer(TestCase):
 
     def test_init(self):
-        net = EncoderDecoder(
-            in_features=16,
-            hidden_features=64,
+        net = Transformer(
+            encoder_num_embedding=13,
+            decoder_num_embedding=17,
+            embedding_dim=16,
             encoder_num=3,
             decoder_num=4,
             head_num=4,
@@ -18,6 +19,6 @@ class TestTransformer(TestCase):
             dropout_rate=0.1,
         )
         print(net)
-        encoder_input = torch.randn(3, 5, 16)
-        decoder_input = torch.randn(3, 7, 16)
-        result = net(encoder_input, None, decoder_input)
+        encoder_input = torch.randint(0, 13, (3, 5)).type(torch.LongTensor)
+        decoder_input = torch.randint(0, 17, (3, 7)).type(torch.LongTensor)
+        net(encoder_input, None, decoder_input)

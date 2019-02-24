@@ -1,7 +1,6 @@
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_position_embedding import PositionEmbedding
+from torch_position_embedding import TrigonometricPositionEmbedding
 from torch_layer_normalization import LayerNormalization
 from torch_multi_head_attention import MultiHeadAttention
 from torch_embed_sim import EmbeddingSim
@@ -9,7 +8,10 @@ from .feed_forward import FeedForward
 
 
 __all__ = [
-    'BlockWrapper', 'EncoderComponent', 'DecoderComponent', 'Encoder', 'Decoder', 'EncoderDecoder',
+    'BlockWrapper',
+    'EncoderComponent', 'DecoderComponent',
+    'Encoder', 'Decoder',
+    'EncoderDecoder', 'Transformer',
 ]
 
 
@@ -207,3 +209,47 @@ class EncoderDecoder(nn.Module):
     def forward(self, encoder_input, encoder_mask, decoder_input):
         encoded = self.encoder(encoder_input, encoder_mask)
         return self.decoder(decoder_input, encoded, encoder_mask)
+
+
+class Transformer(nn.Module):
+
+    def __init__(self,
+                 encoder_num_embedding,
+                 decoder_num_embedding,
+                 embedding_dim,
+                 encoder_num,
+                 decoder_num,
+                 head_num,
+                 attention_activation=None,
+                 feed_forward_activation=F.relu,
+                 dropout_rate=0.0):
+        super(Transformer, self).__init__()
+        self.encoder_embedding = nn.Embedding(
+            num_embeddings=encoder_num_embedding,
+            embedding_dim=embedding_dim,
+        )
+        self.decoder_embedding = nn.Embedding(
+            num_embeddings=decoder_num_embedding,
+            embedding_dim=embedding_dim,
+        )
+        self.position_embedding = TrigonometricPositionEmbedding(
+            embedding_dim=embedding_dim,
+            mode=TrigonometricPositionEmbedding.MODE_ADD,
+        )
+        self.encoder_decoder = EncoderDecoder(
+            in_features=embedding_dim,
+            hidden_features=embedding_dim * 4,
+            encoder_num=encoder_num,
+            decoder_num=decoder_num,
+            head_num=head_num,
+            attention_activation=attention_activation,
+            feed_forward_activation=feed_forward_activation,
+            dropout_rate=dropout_rate,
+        )
+        self.embedding_sim = EmbeddingSim(num_embeddings=decoder_num_embedding)
+
+    def forward(self, encoder_input, encoder_mask, decoder_input):
+        encoder_input = self.position_embedding(self.encoder_embedding(encoder_input))
+        decoder_input = self.position_embedding(self.decoder_embedding(decoder_input))
+        decoded = self.encoder_decoder(encoder_input, encoder_mask, decoder_input)
+        return self.embedding_sim(decoded, self.decoder_embedding.weight)
