@@ -21,6 +21,12 @@ class BlockWrapper(nn.Module):
                  in_features,
                  layer,
                  dropout_rate=0.0):
+        """Wrap layer with add and normalization.
+
+        :param in_features: Length of input features.
+        :param layer: The layer to be wrapped.
+        :param dropout_rate: Dropout rate.
+        """
         super(BlockWrapper, self).__init__()
         self.in_features = in_features
         self.layer = layer
@@ -45,6 +51,15 @@ class EncoderComponent(nn.Module):
                  attention_activation=None,
                  feed_forward_activation=F.relu,
                  dropout_rate=0.0):
+        """Encoder component.
+
+        :param in_features: Length of the input features.
+        :param hidden_features: Number of features inside feed-forward layer.
+        :param head_num: Number of heads.
+        :param attention_activation: Activation for attention layer.
+        :param feed_forward_activation: Activation for feed-forward layer.
+        :param dropout_rate: Dropout rate.
+        """
         super(EncoderComponent, self).__init__()
         self.attention = BlockWrapper(
             in_features,
@@ -79,6 +94,15 @@ class DecoderComponent(nn.Module):
                  attention_activation=None,
                  feed_forward_activation=F.relu,
                  dropout_rate=0.0):
+        """Decoder component.
+
+        :param in_features: Length of the input features.
+        :param hidden_features: Number of features inside feed-forward layer.
+        :param head_num: Number of heads.
+        :param attention_activation: Activation for attention layer.
+        :param feed_forward_activation: Activation for feed-forward layer.
+        :param dropout_rate: Dropout rate.
+        """
         super(DecoderComponent, self).__init__()
         self.self_attention = BlockWrapper(
             in_features,
@@ -125,6 +149,16 @@ class Encoder(nn.Module):
                  attention_activation=None,
                  feed_forward_activation=F.relu,
                  dropout_rate=0.0):
+        """Encoder.
+
+        :param in_features: Length of the input features.
+        :param hidden_features: Number of features inside feed-forward layer.
+        :param encoder_num: Number of encoder components.
+        :param head_num: Number of heads.
+        :param attention_activation: Activation for attention layer.
+        :param feed_forward_activation: Activation for feed-forward layer.
+        :param dropout_rate: Dropout rate.
+        """
         super(Encoder, self).__init__()
         self.components = []
         for i in range(encoder_num):
@@ -155,6 +189,16 @@ class Decoder(nn.Module):
                  attention_activation=None,
                  feed_forward_activation=F.relu,
                  dropout_rate=0.0):
+        """Decoder.
+
+        :param in_features: Length of the input features.
+        :param hidden_features: Number of features inside feed-forward layer.
+        :param decoder_num: Number of decoder components.
+        :param head_num: Number of heads.
+        :param attention_activation: Activation for attention layer.
+        :param feed_forward_activation: Activation for feed-forward layer.
+        :param dropout_rate: Dropout rate.
+        """
         super(Decoder, self).__init__()
         self.components = []
         for i in range(decoder_num):
@@ -186,6 +230,17 @@ class EncoderDecoder(nn.Module):
                  attention_activation=None,
                  feed_forward_activation=F.relu,
                  dropout_rate=0.0):
+        """Encoder and decoder.
+
+        :param in_features: Length of the input features.
+        :param hidden_features: Number of features inside feed-forward layer.
+        :param encoder_num: Number of encoder components.
+        :param decoder_num: Number of decoder components.
+        :param head_num: Number of heads.
+        :param attention_activation: Activation for attention layer.
+        :param feed_forward_activation: Activation for feed-forward layer.
+        :param dropout_rate: Dropout rate.
+        """
         super(EncoderDecoder, self).__init__()
         self.encoder = Encoder(
             in_features=in_features,
@@ -223,6 +278,18 @@ class Transformer(nn.Module):
                  attention_activation=None,
                  feed_forward_activation=F.relu,
                  dropout_rate=0.0):
+        """Transformer.
+
+        :param encoder_num_embedding: Number of tokens for encoder input.
+        :param decoder_num_embedding: Number of tokens for decoder input.
+        :param embedding_dim: The dimension of embeddings.
+        :param encoder_num: Number of encoder components.
+        :param decoder_num: Number of decoder components.
+        :param head_num: Number of heads.
+        :param attention_activation: Activation for attention layer.
+        :param feed_forward_activation: Activation for feed-forward layer.
+        :param dropout_rate: Dropout rate.
+        """
         super(Transformer, self).__init__()
         self.encoder_embedding = nn.Embedding(
             num_embeddings=encoder_num_embedding,
